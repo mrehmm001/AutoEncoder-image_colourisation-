@@ -9,14 +9,13 @@ dependencies:
   - python=3.9
   - numpy
   - pandas
-  - tensorflow_io
-  - opencv-python
-  - scikit-image
   - matplotlib
   # Installing packages directly with pip.
   # - pip
-  # - pip:
-  #   - some-random-non-anaconda-package
+  - pip:
+    - tensorflow_io
+    - opencv-python
+    - scikit-image
   - scikit-learn
   - scikit-learn-intelex
   - scipy
