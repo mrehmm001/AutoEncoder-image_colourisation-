@@ -186,3 +186,8 @@ def load_image_test(image_file):
   input_image, real_image = normalize(input_image, real_image)
 
   return input_image, real_image
+
+def preprocessor(generator,function):
+  for batch in generator:
+    images,_ = batch
+    yield function(images)

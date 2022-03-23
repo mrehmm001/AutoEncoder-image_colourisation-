@@ -1,7 +1,6 @@
 #IMPORTS=======================================================================================================================
 import tensorflow as tf
 import os
-import pathlib
 import time
 import datetime
 import cv2
@@ -13,14 +12,11 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras import layers
 from skimage.io import imshow
 from skimage.color import rgb2lab, lab2rgb
-from IPython import display
-import pathlib
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer
 from tensorflow.keras import optimizers
 # import tensorflow_io as tfio
 from helper import *
-import keras
 
 # The facade training set consist of 400 images
 BUFFER_SIZE = 400
@@ -32,30 +28,27 @@ BATCH_SIZE = 90
 
 
 #PIPELINE=======================================================================================================================
-train_dataset = tf.keras.utils.image_dataset_from_directory(
+train_datagen = ImageDataGenerator()
+train_generator = train_datagen.flow_from_directory(
     "../../input/data_256/",
-    label_mode=None,
-    labels='inferred',
     batch_size=BATCH_SIZE)
 
-train_dataset = train_dataset.map(load_image_train,
-                                  num_parallel_calls=tf.data.AUTOTUNE)
+train_dataset = preprocessor(train_generator,load_image_train)
 
-
-val_dataset = tf.keras.utils.image_dataset_from_directory(
+val_datagen = ImageDataGenerator()
+val_generator = val_dataset.flow_from_directory(
     "../input/val",
-    label_mode=None,
     batch_size=BATCH_SIZE)
 
-val_dataset = val_dataset.map(load_image_test)
+val_dataset = preprocessor(val_generator,load_image_test)
 
 
-test_dataset = tf.keras.utils.image_dataset_from_directory(
+test_datagen = ImageDataGenerator()
+test_generator = test_datagen.flow_from_directory(
     "../input/test",
-    label_mode=None,
     batch_size=BATCH_SIZE)
 
-test_dataset = test_dataset.map(load_image_test)
+test_dataset = preprocessor(test_generator,load_image_test)
 
 
 
