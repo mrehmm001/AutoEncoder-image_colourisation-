@@ -99,13 +99,14 @@ def load(image):
   # Read and decode an image file to a uint8 tensor
   image=image/256
   image = rgb_to_lab(image)
+  image = tf.image.resize(image,(IMG_WIDTH,IMG_HEIGHT))
   batch = tf.shape(image)[0]
-  coloured = tf.image.resize(image[:,:,:,1:],(IMG_WIDTH,IMG_HEIGHT))
-
+  # coloured = tf.image.resize(image[:,:,:,1:],(IMG_WIDTH,IMG_HEIGHT))
+  coloured = image[:,:,:,1:]
   grayscale = image[:,:,:,0]
   grayscale=tf.reshape(grayscale,(batch,IMG_WIDTH,IMG_HEIGHT,1))
-  grayscale = tf.image.resize(grayscale,(IMG_WIDTH,IMG_HEIGHT))
-  
+  # grayscale = tf.image.resize(grayscale,(IMG_WIDTH,IMG_HEIGHT))
+
   # Convert both images to float32 tensors
   grayscale = tf.cast(grayscale, tf.float32)
   coloured = tf.cast(coloured, tf.float32)
@@ -171,7 +172,7 @@ def normalize(input_image, real_image):
 
 def load_image_train(image_file):
   input_image, real_image = load(image_file)
-  input_image, real_image = random_jitter(input_image, real_image)
+  # input_image, real_image = random_jitter(input_image, real_image)
   # input_image, real_image = resize(input_image, real_image,
   #                                  IMG_HEIGHT, IMG_WIDTH)
   input_image, real_image = normalize(input_image, real_image)

@@ -20,36 +20,32 @@ from helper import *
 
 # The facade training set consist of 400 images
 BUFFER_SIZE = 400
-# The batch size of 1 produced better results for the U-Net in the original pix2pix experiment
-BATCH_SIZE = 90
+
+BATCH_SIZE = 64
+
+IMAGE_HEIGHT_WIDTH=256
 
 
+#Check GPU version and tensorflow
+print("Is GPU being used? ",len(tf.config.list_physical_devices('GPU'))>0)
+print("TensorFlow version: ",tf.__version__)
 
 
 
 #PIPELINE=======================================================================================================================
-train_datagen = ImageDataGenerator()
+train_datagen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, rotation_range=20, horizontal_flip=True)
 train_generator = train_datagen.flow_from_directory(
-    "../../input/data_256/",
+    "/home/students/mrehm001/dataset/train/",
     batch_size=BATCH_SIZE)
 
 train_dataset = preprocessor(train_generator,load_image_train)
 
-val_datagen = ImageDataGenerator()
-val_generator = val_dataset.flow_from_directory(
-    "../input/val",
+val_datagen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, rotation_range=20, horizontal_flip=True)
+val_generator = val_datagen.flow_from_directory(
+    "/home/students/mrehm001/dataset/val/",
     batch_size=BATCH_SIZE)
 
 val_dataset = preprocessor(val_generator,load_image_test)
-
-
-test_datagen = ImageDataGenerator()
-test_generator = test_datagen.flow_from_directory(
-    "../input/test",
-    batch_size=BATCH_SIZE)
-
-test_dataset = preprocessor(test_generator,load_image_test)
-
 
 
 #MODEL==================================================================================================
@@ -57,7 +53,7 @@ test_dataset = preprocessor(test_generator,load_image_test)
 model = Sequential()
 
 #Encoder
-model.add(Conv2D(64, (3, 3), activation='relu', padding='same', strides=2, input_shape=(256, 256, 1)))
+model.add(Conv2D(64, (3, 3), activation='relu', padding='same', strides=2, input_shape=(IMAGE_HEIGHT_WIDTH, IMAGE_HEIGHT_WIDTH, 1)))
 model.add(Conv2D(128, (3, 3), activation='relu', padding='same'))
 model.add(Conv2D(128, (3,3), activation='relu', padding='same', strides=2))
 model.add(Conv2D(256, (3,3), activation='relu', padding='same'))
@@ -85,7 +81,9 @@ model.compile(optimizer=optimizers.Adam(learning_rate=1e-4), loss='mse' , metric
 
 
 #TRAIN===========================================================================================
-checkpoint_filepath = '/tmp/checkpoint'
+train_steps = train_generator.samples // BATCH_SIZE
+val_steps = val_generator.samples//BATCH_SIZE
+checkpoint_filepath = './checkpoint'
 model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_filepath,
     save_weights_only=True,
@@ -93,11 +91,10 @@ model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     mode='max',
     save_best_only=True)
 
-history=model.fit(train_dataset, epochs = 20,shuffle=True,callbacks=[model_checkpoint_callback], validation_data=val_dataset)
-
-
+history=model.fit(train_dataset, epochs = 50,steps_per_epoch=train_steps,shuffle=True,callbacks=[model_checkpoint_callback],validation_steps = val_steps, validation_data=val_dataset)
+print("Model finished training")
 
 #SAVE==========================================================================================
 model.save("model.h5")
 np.save("history.npy",history.history)
-
+print("Model has been saved")
